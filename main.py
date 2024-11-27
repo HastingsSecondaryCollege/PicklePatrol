@@ -73,6 +73,7 @@ def play_video_with_timer(video_path, countdown_time):
             # Display the countdown timer on the video
             timer_text = f"EPIRB launch in: {remaining_time} sec"
             cv2.putText(frame, timer_text, position, font, font_scale, font_color, thickness)
+            cvzone.putTextRect(frame, "If False Alarm, press Q to cancel", (150, 100), 1, 1, (0, 0, 0), (0, 255, 0))
             # Show the video frame
             cv2.imshow("Outboard Footage with Countdown Timer", frame)
             # Break the loop if time runs out
