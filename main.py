@@ -45,6 +45,9 @@ man_overboard = False
 frames_to_capture = 10  # Number of frames for the next 2 seconds
 message = "Triggered"
 PicklePatrolActive = False
+cv2.namedWindow("PicklePatrol",cv2.WINDOW_FULLSCREEN)
+
+
 # Define a function that play a video on loop with a countdown timer
 def play_video_with_timer(video_path, countdown_time):
     cap = cv2.VideoCapture(video_path)
@@ -75,11 +78,16 @@ def play_video_with_timer(video_path, countdown_time):
             cv2.putText(frame, timer_text, position, font, font_scale, font_color, thickness)
             cvzone.putTextRect(frame, "If False Alarm, press Q to cancel", (150, 100), 1, 1, (0, 0, 0), (0, 255, 0))
             # Show the video frame
-            cv2.imshow("Outboard Footage with Countdown Timer", frame)
+            biggerFrame = cv2.resize(frame, (960, 720))
+            cv2.imshow("Overboard Footage with Countdown Timer", biggerFrame)
             # Break the loop if time runs out
             if remaining_time <= 0:
                 print("Countdown completed!")
                 serialcomm.write('y'.encode())
+                global message
+                message = "System must be reset. EPIRB has been launched."
+                global PicklePatrolActive
+                PicklePatrolActive = False
                 break
             # Wait for a key press or frame delay
             if cv2.waitKey(frame_delay) & 0xFF == ord('q'):
@@ -120,12 +128,13 @@ while True:
             # cv2.circle(frame, (cx, cy), 4, (255, 0, 0), -1)
             # If the person is on the left of the yellow line they are considered on the boat
             # If they are detected to the right of the line they have fallen overboard
-            if cx > 320 and PicklePatrolActive is True:  # look at the X coord of the center to see if its greater than the handrail
+            if cx > 320:  # look at the X coord of the center to see if its greater than the handrail
                 # Draw Red Rectangle around detected people
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                man_overboard = True
-                capturing_future = True
-                print("Capturing video after event...")
+                if PicklePatrolActive is True:
+                    man_overboard = True
+                    capturing_future = True
+                    print("Capturing video after event...")
             else:
                 # Draw Green Rectangle around detected people
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
@@ -176,7 +185,8 @@ while True:
     else:
         # Add the frame to the past buffer
         past_buffer.append(cleanFrame)
-    cv2.imshow("RGB", frame)
+    bigger = cv2.resize(frame,(960,720))
+    cv2.imshow("PicklePatrol", bigger)
     result = cv2.waitKey(1)
     if result & 0xFF == ord("q"):
         break
