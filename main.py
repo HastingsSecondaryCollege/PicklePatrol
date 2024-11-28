@@ -10,6 +10,11 @@
 import cv2
 from ultralytics import YOLO
 from collections import deque
+
+from playsound import playsound
+
+import winsound
+
 import cvzone
 import serial
 import time
@@ -75,7 +80,10 @@ def play_video_with_timer(video_path, countdown_time):
             remaining_time = max(0, countdown_time - int(elapsed_time))
             # Display the countdown timer on the video
             timer_text = f"EPIRB launch in: {remaining_time} sec"
+
             cv2.putText(frame, timer_text, position, font, font_scale, font_color, thickness)
+            cvzone.putTextRect(frame, "Drone Launched!", (50, 390), 1, 1, (0, 0, 0), (0, 255, 0))
+            cvzone.putTextRect(frame, "Current Coordinates: 33.8 S, 151.1 E", (50, 420), 1, 1, (0, 0, 0), (0, 255, 0))
             cvzone.putTextRect(frame, "If False Alarm, press Q to cancel", (150, 100), 1, 1, (0, 0, 0), (0, 255, 0))
             # Show the video frame
             biggerFrame = cv2.resize(frame, (960, 720))
@@ -132,6 +140,7 @@ while True:
                 # Draw Red Rectangle around detected people
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 if PicklePatrolActive is True:
+                    winsound.PlaySound(r'Alarm.wav', winsound.SND_ASYNC + winsound.SND_LOOP)
                     man_overboard = True
                     capturing_future = True
                     print("Capturing video after event...")
@@ -181,7 +190,8 @@ while True:
             print(f"Saved the video (past 2 seconds and next 2 seconds) to {output_filename}")
             future_buffer = []  # Reset future buffer
             message = "Done Recording"
-            play_video_with_timer(output_filename, 5)
+            play_video_with_timer(output_filename, 10)
+            winsound.PlaySound(None,winsound.SND_PURGE)
     else:
         # Add the frame to the past buffer
         past_buffer.append(cleanFrame)
